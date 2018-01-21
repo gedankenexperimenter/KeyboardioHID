@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 #pragma once
 
 #define MOUSE_LEFT		(1 << 0)

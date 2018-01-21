@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 #ifndef __HIDTables__
 #define __HIDTables__
 

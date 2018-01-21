@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 #pragma once
 
 #define D_MULTIBYTE(n) (n + 0x01)
