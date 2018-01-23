@@ -40,7 +40,7 @@ typedef union {
   // Modifiers + keymap
   struct {
     uint8_t modifiers;
-    uint8_t keys[KEY_BYTES ];
+    uint8_t keys[KEY_BYTES];
   };
   uint8_t allkeys[1 + KEY_BYTES];
 } HID_KeyboardReport_Data_t;
