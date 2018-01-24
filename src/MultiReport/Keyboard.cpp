@@ -138,17 +138,22 @@ int Keyboard_::sendReportUnchecked(void) {
 }
 
 
-int Keyboard_::sendReport(void) {
+// If the keyboard can't send a HID report to the host, there's no point in proceeding, so
+// we check the return value of `HID().SendReport()` (-1 indicates failure). If it fails,
+// we wait 10ms, and try again until it succeeds. This is probably not the best approach
+// to the problem, however. For example, if there's something about a particular report
+// that makes it fail, but other reports would succeed, we could end up in an infinite
+// loop.
+void Keyboard_::sendReport(void) {
   // ChromeOS 51-60 (at least) bug: if a modifier and a normal keycode are added in the
   // same report, in some cases the shift is not applied (e.g. `shift`+`[` doesn't yield
   // `{`). To compensate for this, check to see if the modifier byte has changed. If so,
   // copy the modifier byte to the previous key report, and resend it before proceeding.
   if (lastKeyReport.modifiers != keyReport.modifiers) {
-    uint8_t last_mods = lastKeyReport.modifiers;
     lastKeyReport.modifiers = keyReport.modifiers;
-    int returnCode = HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &lastKeyReport, sizeof(lastKeyReport));
-    if (returnCode < 0)
-      lastKeyReport.modifiers = last_mods;
+    while (HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &lastKeyReport, sizeof(lastKeyReport)) < 0) {
+      delay(10);
+    }
   }
 
   // If the last report is different than the current report, then we need to send a report.
@@ -157,12 +162,11 @@ int Keyboard_::sendReport(void) {
 
   if (memcmp(lastKeyReport.allkeys, keyReport.allkeys, sizeof(keyReport))) {
     // if the two reports are different, send a report
-    int returnCode = sendReportUnchecked();
-    if (returnCode > 0)
-      memcpy(lastKeyReport.allkeys, keyReport.allkeys, sizeof(keyReport));
-    return returnCode;
+    memcpy(lastKeyReport.allkeys, keyReport.allkeys, sizeof(keyReport));
+    while (sendReportUnchecked() < 0) {
+      delay(10);
+    }
   }
-  return -1;
 }
 
 /* Returns true if the modifer key passed in will be sent during this key report
