@@ -152,6 +152,7 @@ void Keyboard_::sendReport(void) {
   if (lastKeyReport.modifiers != keyReport.modifiers) {
     lastKeyReport.modifiers = keyReport.modifiers;
     while (HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &lastKeyReport, sizeof(lastKeyReport)) < 0) {
+      // assert(false);
       delay(10);
     }
   }
@@ -164,6 +165,7 @@ void Keyboard_::sendReport(void) {
     // if the two reports are different, send a report
     memcpy(lastKeyReport.allkeys, keyReport.allkeys, sizeof(keyReport));
     while (sendReportUnchecked() < 0) {
+      // assert(false);
       delay(10);
     }
   }
