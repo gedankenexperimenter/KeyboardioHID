@@ -134,7 +134,8 @@ void Keyboard_::end(void) {
 }
 
 int Keyboard_::sendReportUnchecked(void) {
-    return HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &keyReport, sizeof(keyReport));
+    return HID().SendReport(HID_REPORTID_NKRO_KEYBOARD,
+                            &keyReport, sizeof(keyReport));
 }
 
 
@@ -151,7 +152,8 @@ void Keyboard_::sendReport(void) {
   // copy the modifier byte to the previous key report, and resend it before proceeding.
   if (lastKeyReport.modifiers != keyReport.modifiers) {
     lastKeyReport.modifiers = keyReport.modifiers;
-    while (HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &lastKeyReport, sizeof(lastKeyReport)) < 0) {
+    while (HID().SendReport(HID_REPORTID_NKRO_KEYBOARD,
+                            &lastKeyReport, sizeof(lastKeyReport)) < 0) {
       // assert(false);
       delay(10);
     }
