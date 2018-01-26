@@ -138,11 +138,13 @@ bool Dispatcher::sendReport(const Report &report) {
   return true;
 }
 
-byte ledState() {
+byte Dispatcher::ledState() {
   return HID().getLEDs();
 }
 
-byte lastModifierState() {
+// Maybe it's better to just return a reference to the last report? The problem
+// there is that it could then be modified.
+byte Dispatcher::lastModifierState() {
   return last_report_.modifiers;
 }
 
