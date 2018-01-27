@@ -160,6 +160,7 @@ void Report::clear() {
 
 void Report::setKeycode(byte keycode, bool val) {
   if (keycode <= HID_LAST_KEY) {
+    // Normal, printable keys (plus some that shouldn't be in here)
     byte idx = keycode / 8;
     byte bit = keycode % 8;
     byte mask = 1 << bit;
@@ -170,6 +171,7 @@ void Report::setKeycode(byte keycode, bool val) {
     }
   } else if (k >= HID_KEYBOARD_FIRST_MODIFIER &&
              k <= HID_KEYBOARD_LAST_MODIFIER) {
+    // Modifier keys
     byte mask = 1 << (k - HID_KEYBOARD_FIRST_MODIFIER);
     if (v) {
       data_.modifiers |= mask;
@@ -177,6 +179,7 @@ void Report::setKeycode(byte keycode, bool val) {
       data_.modifiers &= ~mask;
     }
   }
+  // There are unknown keycodes; we just ignore them silently
 }
 
 // This method is of dubious value
