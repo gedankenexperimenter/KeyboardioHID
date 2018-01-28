@@ -4,6 +4,8 @@
 
 #include "DescriptorPrimitives.h"
 
+#include <Arduino.h>
+
 // New idea: separate the key report (data) from the dispatcher (HID report
 // sender). This way, we can interact separately with the two, and even create
 // new reports without having to save and restore one that's getting ready to be
@@ -123,17 +125,17 @@ int Dispatcher::sendReportUnchecked(const Report &report) {
 bool Dispatcher::sendReport(const Report &report) {
   // chromeOS bug workaround
   if (report.mods() != last_report_.mods()) {
-    last_report_.data.modifiers = report.mods();
+    last_report_.data_.modifiers = report.data_.modifiers;
     while (sendReportUnchecked(last_report_) < 0) {
       delay(10);
     }
   }
   // check different from last_report_;
-  if (memcmp(last_report_.data, report.data, sizeof(report.data))) {
-    memcpy(last_report_.data, report.data, sizeof(report));
+  if (memcmp(last_report_.data_, report.data_, sizeof(report.data_))) {
     while (sendReportUnchecked(report) < 0) {
       delay(10);
     }
+    memcpy(last_report_.data_, report.data_, sizeof(report.data_));
   }
   return true;
 }
@@ -145,7 +147,7 @@ byte Dispatcher::ledState() {
 // Maybe it's better to just return a reference to the last report? The problem
 // there is that it could then be modified.
 byte Dispatcher::lastModifierState() {
-  return last_report_.modifiers;
+  return last_report_.mods();
 }
 
 
