@@ -121,7 +121,8 @@ int Dispatcher::sendReportUnchecked(const Report &report) {
 
 // The while() loops are probably a bad idea. We should just make sure that any
 // successful report sent will automatically reset things to a good state. If we
-// can't send a report, nothing much matters, anyway.
+// can't send a report, nothing much matters, anyway. I'm really not sure it
+// helps enough to check any of the return codes, frankly.
 bool Dispatcher::sendReport(const Report &report) {
   // chromeOS bug workaround
   if (report.mods() != last_report_.mods()) {
