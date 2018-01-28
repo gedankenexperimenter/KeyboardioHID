@@ -19,7 +19,7 @@ class Report {
   void del(byte keycode);
  private:
   struct {
-    byte keycode_;
+    byte keycode;
   } data_;
 };
 

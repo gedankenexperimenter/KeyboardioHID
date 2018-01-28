@@ -32,11 +32,11 @@ Report::Report() {
 }
 
 void Report::clear() {
-  data_.keycode_ = 0;
+  data_.keycode = 0;
 }
 
 void Report::add(byte keycode) {
-  data_.keycode_ = keycode;
+  data_.keycode = keycode;
 }
 
 void Report::del(byte keycode) {
