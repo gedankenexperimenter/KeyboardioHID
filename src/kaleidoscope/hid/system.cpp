@@ -32,25 +32,15 @@ Report::Report() {
 }
 
 void Report::clear() {
-  keycode_ = 0;
+  data_.keycode_ = 0;
 }
 
-void Report::add(uint16_t keycode) {
-  for (byte i = 0; i < max_keycodes_; ++i) {
-    if (data_.keycodes[i] == 0) {
-      data_.keycodes[i] = keycode;
-      break;
-    }
-  }
+void Report::add(byte keycode) {
+  data_.keycode_ = keycode;
 }
 
-void Report::del(uint16_t keycode) {
-  for (byte i = 0; i < max_keycodes_; ++i) {
-    if (data_.keycodes[i] == keycode) {
-      data_.keycodes[i] = 0;
-      // no break; delete all instances of this keycode from the report
-    }
-  }
+void Report::del(byte keycode) {
+  clear();
 }
 
 
@@ -64,33 +54,27 @@ void Dispatcher::init() {
   sendReportUnchecked(last_report_);
 }
 
-void Dispatcher::sendReportUnchecked() {
-  HID().SendReport(HID_REPORTID_CONSUMERCONTROL, &data_, sizeof(data_));
+void Dispatcher::sendReportUnchecked(const Report& report) {
+  HID().SendReport(HID_REPORTID_SYSTEMCONTROL, &report.data_, sizeof(report.data_));
 }
 
-void Dispatcher::sendReport() {
+void Dispatcher::sendReport(const Report& report) {
   // If the last report is different than the current report, then we need to send a report.
   // We guard sendReport like this so that calling code doesn't end up spamming the host with empty reports
   // if sendReport is called in a tight loop.
 
   // if the previous report is the same, return early without a new report.
-  if (memcmp(&last_report_.keycodes_, &data_, sizeof(data_)) == 0)
+
+  // in the case of system control, the report is only one byte, so this could
+  // really be simplified a lot. For now, I'm leaving it as similar as possible
+  // to the other keyboard reports.
+  if (memcmp(&last_report_.keycodes_, &report.data_, sizeof(report.data_)) == 0)
     return;
 
   sendReportUnchecked();
   memcpy(&_lastReport, &_report, sizeof(_report));
 }
 
-class Dispatcher {
- public:
-  Dispatcher();
-  void init();
-  void sendReport(const Report &report);
- private:
-  Report last_report_;
-  void sendReportUnchecked(const Report &report);
-};
-
-} // namespace consumer {
+} // namespace system {
 } // namespace hid {
 } // namespace kaleidoscope {

@@ -67,20 +67,20 @@ void Dispatcher::init() {
   sendReportUnchecked(last_report_);
 }
 
-void Dispatcher::sendReportUnchecked() {
-  HID().SendReport(HID_REPORTID_CONSUMERCONTROL, &data_, sizeof(data_));
+void Dispatcher::sendReportUnchecked(const Report& report) {
+  HID().SendReport(HID_REPORTID_CONSUMERCONTROL, &report.data_, sizeof(report.data_));
 }
 
-void Dispatcher::sendReport() {
+void Dispatcher::sendReport(const Report& report) {
   // If the last report is different than the current report, then we need to send a report.
   // We guard sendReport like this so that calling code doesn't end up spamming the host with empty reports
   // if sendReport is called in a tight loop.
 
   // if the previous report is the same, return early without a new report.
-  if (memcmp(&last_report_.keycodes_, &data_, sizeof(data_)) == 0)
+  if (memcmp(&last_report_.keycodes_, &report.data_, sizeof(report.data_)) == 0)
     return;
 
-  sendReportUnchecked();
+  sendReportUnchecked(report);
   memcpy(&_lastReport, &_report, sizeof(_report));
 }
 

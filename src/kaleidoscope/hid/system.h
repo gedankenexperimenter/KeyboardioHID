@@ -18,7 +18,9 @@ class Report {
   void add(byte keycode);
   void del(byte keycode);
  private:
-  byte keycode_;
+  struct {
+    byte keycode_;
+  } data_;
 };
 
 class Dispatcher {
@@ -31,6 +33,6 @@ class Dispatcher {
   void sendReportUnchecked(const Report &report);
 };
 
-} // namespace consumer {
+} // namespace system {
 } // namespace hid {
 } // namespace kaleidoscope {
