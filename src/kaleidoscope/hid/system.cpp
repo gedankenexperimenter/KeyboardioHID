@@ -71,7 +71,11 @@ void Dispatcher::sendReport(const Report& report) {
   if (memcmp(&last_report_.keycodes_, &report.data_, sizeof(report.data_)) == 0)
     return;
 
-  sendReportUnchecked();
+  if (report.data_.keycode == HID_SYSTEM_WAKE_UP) {
+    USBDevice.wakeupHost();
+  } else {
+    sendReportUnchecked();
+  }
   memcpy(&_lastReport, &_report, sizeof(_report));
 }
 
