@@ -215,6 +215,10 @@ size_t Keyboard_::press(uint8_t k) {
   return 0;
 }
 
+void Keyboard_::addModifiers(uint8_t m) {
+  keyReport.modifiers |= m;
+}
+
 size_t Keyboard_::release(uint8_t k) {
   // If we're releasing a printable key
   if (k <= HID_LAST_KEY) {

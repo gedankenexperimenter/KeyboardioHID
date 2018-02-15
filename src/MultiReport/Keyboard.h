@@ -58,6 +58,8 @@ class Keyboard_ {
   void  releaseAll(void);
   int sendReport(void);
 
+  void addModifiers(m);
+
   boolean isModifierActive(uint8_t k);
   boolean wasModifierActive(uint8_t k);
 
