@@ -257,4 +257,16 @@ void Keyboard_::releaseAll(void) {
   memset(&_key_report.allkeys, 0x00, sizeof(_key_report.allkeys));
 }
 
+void Keyboard_::stashReport() {
+  // First, save the current report
+  _stashed_key_report = _key_report;
+  // Next, overwrite the current report with the previous one
+  _key_report = _last_key_report;
+}
+
+void Keyboard_::restoreReport() {
+  // Restore the report from the stashed copy
+  _key_report = _stashed_key_report;
+}
+
 Keyboard_ Keyboard;

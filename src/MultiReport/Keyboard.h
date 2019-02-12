@@ -67,9 +67,13 @@ class Keyboard_ {
 
   uint8_t getLEDs() { return HID().getLEDs(); };
 
+  void stashReport();
+  void restoreReport();
+
  private:
   HID_KeyboardReport_Data_t _key_report;
   HID_KeyboardReport_Data_t _last_key_report;
+  HID_KeyboardReport_Data_t _stashed_key_report;
 
   int sendReportUnchecked(void);
 };
