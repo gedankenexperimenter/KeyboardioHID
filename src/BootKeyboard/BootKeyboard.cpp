@@ -180,8 +180,8 @@ bool BootKeyboard_::setup(USBSetup& setup) {
 
       // Input (set HID report)
       else if (setup.wValueH == HID_REPORT_TYPE_INPUT) {
-        if (length == sizeof(_keyReport)) {
-          USB_RecvControl(&_keyReport, length);
+        if (length == sizeof(_key_report)) {
+          USB_RecvControl(&_key_report, length);
           return true;
         }
       }
@@ -204,10 +204,10 @@ void BootKeyboard_::setProtocol(uint8_t protocol) {
 }
 
 int BootKeyboard_::sendReport(void) {
-  if (memcmp(&_lastKeyReport, &_keyReport, sizeof(_keyReport))) {
+  if (memcmp(&_last_key_report, &_key_report, sizeof(_key_report))) {
     // if the two reports are different, send a report
-    int returnCode = USB_Send(pluggedEndpoint | TRANSFER_RELEASE, &_keyReport, sizeof(_keyReport));
-    memcpy(&_lastKeyReport, &_keyReport, sizeof(_keyReport));
+    int returnCode = USB_Send(pluggedEndpoint | TRANSFER_RELEASE, &_key_report, sizeof(_key_report));
+    memcpy(&_last_key_report, &_key_report, sizeof(_key_report));
     return returnCode;
   }
   return -1;
@@ -224,15 +224,15 @@ size_t BootKeyboard_::press(uint8_t k) {
 
   if ((k >= HID_KEYBOARD_FIRST_MODIFIER) && (k <= HID_KEYBOARD_LAST_MODIFIER)) {
     // it's a modifier key
-    _keyReport.modifiers |= (0x01 << (k - HID_KEYBOARD_FIRST_MODIFIER));
+    _key_report.modifiers |= (0x01 << (k - HID_KEYBOARD_FIRST_MODIFIER));
   } else {
     // it's some other key:
     // Add k to the key report only if it's not already present
     // and if there is an empty slot.
-    for (uint8_t i = 0; i < sizeof(_keyReport.keycodes); i++) {
-      if (_keyReport.keycodes[i] != k) { // is k already in list?
-        if (0 == _keyReport.keycodes[i]) { // have we found an empty slot?
-          _keyReport.keycodes[i] = k;
+    for (uint8_t i = 0; i < sizeof(_key_report.keycodes); i++) {
+      if (_key_report.keycodes[i] != k) { // is k already in list?
+        if (0 == _key_report.keycodes[i]) { // have we found an empty slot?
+          _key_report.keycodes[i] = k;
           done = 1;
           break;
         }
@@ -259,14 +259,14 @@ size_t BootKeyboard_::press(uint8_t k) {
 size_t BootKeyboard_::release(uint8_t k) {
   if ((k >= HID_KEYBOARD_FIRST_MODIFIER) && (k <= HID_KEYBOARD_LAST_MODIFIER)) {
     // it's a modifier key
-    _keyReport.modifiers = _keyReport.modifiers & (~(0x01 << (k - HID_KEYBOARD_FIRST_MODIFIER)));
+    _key_report.modifiers = _key_report.modifiers & (~(0x01 << (k - HID_KEYBOARD_FIRST_MODIFIER)));
   } else {
     // it's some other key:
     // Test the key report to see if k is present.  Clear it if it exists.
     // Check all positions in case the key is present more than once (which it shouldn't be)
-    for (uint8_t i = 0; i < sizeof(_keyReport.keycodes); i++) {
-      if (_keyReport.keycodes[i] == k) {
-        _keyReport.keycodes[i] = 0;
+    for (uint8_t i = 0; i < sizeof(_key_report.keycodes); i++) {
+      if (_key_report.keycodes[i] == k) {
+        _key_report.keycodes[i] = 0;
       }
     }
 
@@ -277,11 +277,11 @@ size_t BootKeyboard_::release(uint8_t k) {
     //    (0x03)(0x02)(0x01)(0x00)(0x00)(0x00)
     uint8_t current = 0, nextpos = 0;
 
-    while (current < sizeof(_keyReport.keycodes)) {
-      if (_keyReport.keycodes[current]) {
-        uint8_t tmp = _keyReport.keycodes[nextpos];
-        _keyReport.keycodes[nextpos] = _keyReport.keycodes[current];
-        _keyReport.keycodes[current] = tmp;
+    while (current < sizeof(_key_report.keycodes)) {
+      if (_key_report.keycodes[current]) {
+        uint8_t tmp = _key_report.keycodes[nextpos];
+        _key_report.keycodes[nextpos] = _key_report.keycodes[current];
+        _key_report.keycodes[current] = tmp;
         ++nextpos;
       }
       ++current;
@@ -293,7 +293,7 @@ size_t BootKeyboard_::release(uint8_t k) {
 
 
 void BootKeyboard_::releaseAll(void) {
-  memset(&_keyReport.bytes, 0x00, sizeof(_keyReport.bytes));
+  memset(&_key_report.bytes, 0x00, sizeof(_key_report.bytes));
 }
 
 
@@ -301,8 +301,8 @@ void BootKeyboard_::releaseAll(void) {
  * Returns false in all other cases
  * */
 boolean BootKeyboard_::isKeyPressed(uint8_t k) {
-    for (uint8_t i = 0; i < sizeof(_keyReport.keycodes); i++) {
-        if (_keyReport.keycodes[i] == k) {
+    for (uint8_t i = 0; i < sizeof(_key_report.keycodes); i++) {
+        if (_key_report.keycodes[i] == k) {
             return true;
         }
     }
@@ -313,8 +313,8 @@ boolean BootKeyboard_::isKeyPressed(uint8_t k) {
  * Returns false in all other cases
  * */
 boolean BootKeyboard_::wasKeyPressed(uint8_t k) {
-    for (uint8_t i = 0; i < sizeof(_keyReport.keycodes); i++) {
-        if (_lastKeyReport.keycodes[i] == k) {
+    for (uint8_t i = 0; i < sizeof(_key_report.keycodes); i++) {
+        if (_last_key_report.keycodes[i] == k) {
             return true;
         }
     }
@@ -329,7 +329,7 @@ boolean BootKeyboard_::wasKeyPressed(uint8_t k) {
 boolean BootKeyboard_::isModifierActive(uint8_t k) {
   if (k >= HID_KEYBOARD_FIRST_MODIFIER && k <= HID_KEYBOARD_LAST_MODIFIER) {
     k = k - HID_KEYBOARD_FIRST_MODIFIER;
-    return !!(_keyReport.modifiers & (1 << k));
+    return !!(_key_report.modifiers & (1 << k));
   }
   return false;
 }
@@ -340,7 +340,7 @@ boolean BootKeyboard_::isModifierActive(uint8_t k) {
 boolean BootKeyboard_::wasModifierActive(uint8_t k) {
   if (k >= HID_KEYBOARD_FIRST_MODIFIER && k <= HID_KEYBOARD_LAST_MODIFIER) {
     k = k - HID_KEYBOARD_FIRST_MODIFIER;
-    return !!(_lastKeyReport.modifiers & (1 << k));
+    return !!(_last_key_report.modifiers & (1 << k));
   }
   return false;
 }
@@ -349,14 +349,14 @@ boolean BootKeyboard_::wasModifierActive(uint8_t k) {
  * Returns false in all other cases
  * */
 boolean BootKeyboard_::isAnyModifierActive() {
-  return _keyReport.modifiers > 0;
+  return _key_report.modifiers > 0;
 }
 
 /* Returns true if any modifier key was being sent during the previous key report
  * Returns false in all other cases
  * */
 boolean BootKeyboard_::wasAnyModifierActive() {
-  return _lastKeyReport.modifiers > 0;
+  return _last_key_report.modifiers > 0;
 }
 
 BootKeyboard_ BootKeyboard;

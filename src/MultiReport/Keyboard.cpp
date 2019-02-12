@@ -98,7 +98,7 @@ void Keyboard_::end(void) {
 }
 
 int Keyboard_::sendReportUnchecked(void) {
-    return HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &keyReport, sizeof(keyReport));
+    return HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &_key_report, sizeof(_key_report));
 }
 
 
@@ -107,7 +107,7 @@ int Keyboard_::sendReport(void) {
   // We guard sendReport like this so that calling code doesn't end up spamming the host with empty reports
   // if sendReport is called in a tight loop.
 
-  if (memcmp(lastKeyReport.allkeys, keyReport.allkeys, sizeof(keyReport))) {
+  if (memcmp(_last_key_report.allkeys, _key_report.allkeys, sizeof(_key_report))) {
     // if the two reports are different, send a report
 
   // ChromeOS 51-60 (at least) bug: if a modifier and a normal keycode are added in the
@@ -118,12 +118,12 @@ int Keyboard_::sendReport(void) {
   // If modifiers are being turned on at the same time as any change
   // to the non-modifier keys in the report, then we send the previous
   // report with the new modifiers
-  if ( ( (lastKeyReport.modifiers ^ keyReport.modifiers) & keyReport.modifiers)
-	&& (memcmp(lastKeyReport.keys,keyReport.keys, sizeof(keyReport.keys)))) {
-    uint8_t last_mods = lastKeyReport.modifiers;
-    lastKeyReport.modifiers = keyReport.modifiers;
-    int returnCode = HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &lastKeyReport, sizeof(lastKeyReport));
-    lastKeyReport.modifiers = last_mods;
+  if ( ( (_last_key_report.modifiers ^ _key_report.modifiers) & _key_report.modifiers)
+	&& (memcmp(_last_key_report.keys,_key_report.keys, sizeof(_key_report.keys)))) {
+    uint8_t last_mods = _last_key_report.modifiers;
+    _last_key_report.modifiers = _key_report.modifiers;
+    int returnCode = HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &_last_key_report, sizeof(_last_key_report));
+    _last_key_report.modifiers = last_mods;
   }
 
   // If modifiers are being turned off, then we send the new report with the previous modifiers.
@@ -131,12 +131,12 @@ int Keyboard_::sendReport(void) {
   // Jesse has observed that sending Shift + 3 key up events in the same report
   // will sometimes result in a spurious '3' rather than '#', especially when the keys
   // had been held for a while
-  else if (( (lastKeyReport.modifiers ^ keyReport.modifiers) & lastKeyReport.modifiers)
-	&& (memcmp(lastKeyReport.keys,keyReport.keys, sizeof(keyReport.keys)))) {
-    uint8_t mods = keyReport.modifiers;
-    keyReport.modifiers = lastKeyReport.modifiers;
-    int returnCode = HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &keyReport, sizeof(lastKeyReport));
-    keyReport.modifiers = mods;
+  else if (( (_last_key_report.modifiers ^ _key_report.modifiers) & _last_key_report.modifiers)
+	&& (memcmp(_last_key_report.keys,_key_report.keys, sizeof(_key_report.keys)))) {
+    uint8_t mods = _key_report.modifiers;
+    _key_report.modifiers = _last_key_report.modifiers;
+    int returnCode = HID().SendReport(HID_REPORTID_NKRO_KEYBOARD, &_key_report, sizeof(_last_key_report));
+    _key_report.modifiers = mods;
   }
 
 
@@ -145,7 +145,7 @@ int Keyboard_::sendReport(void) {
 
     int returnCode = sendReportUnchecked();
     if (returnCode > 0)
-      memcpy(lastKeyReport.allkeys, keyReport.allkeys, sizeof(keyReport));
+      memcpy(_last_key_report.allkeys, _key_report.allkeys, sizeof(_key_report));
     return returnCode;
   }
   return -1;
@@ -157,7 +157,7 @@ int Keyboard_::sendReport(void) {
 boolean Keyboard_::isModifierActive(uint8_t k) {
   if (k >= HID_KEYBOARD_FIRST_MODIFIER && k <= HID_KEYBOARD_LAST_MODIFIER) {
     k = k - HID_KEYBOARD_FIRST_MODIFIER;
-    return !!(keyReport.modifiers & (1 << k));
+    return !!(_key_report.modifiers & (1 << k));
   }
   return false;
 }
@@ -168,7 +168,7 @@ boolean Keyboard_::isModifierActive(uint8_t k) {
 boolean Keyboard_::wasModifierActive(uint8_t k) {
   if (k >= HID_KEYBOARD_FIRST_MODIFIER && k <= HID_KEYBOARD_LAST_MODIFIER) {
     k = k - HID_KEYBOARD_FIRST_MODIFIER;
-    return !!(lastKeyReport.modifiers & (1 << k));
+    return !!(_last_key_report.modifiers & (1 << k));
   }
   return false;
 }
@@ -177,14 +177,14 @@ boolean Keyboard_::wasModifierActive(uint8_t k) {
  * Returns false in all other cases
  * */
 boolean Keyboard_::isAnyModifierActive() {
-  return keyReport.modifiers > 0;
+  return _key_report.modifiers > 0;
 }
 
 /* Returns true if *any* modifier was being sent during the previous key report
  * Returns false in all other cases
  * */
 boolean Keyboard_::wasAnyModifierActive() {
-  return lastKeyReport.modifiers > 0;
+  return _last_key_report.modifiers > 0;
 }
 
 
@@ -194,7 +194,7 @@ boolean Keyboard_::wasAnyModifierActive() {
 boolean Keyboard_::isKeyPressed(uint8_t k) {
     if (k <= HID_LAST_KEY) {
         uint8_t bit = 1 << (uint8_t(k) % 8);
-        return !! (keyReport.keys[k / 8] & bit);
+        return !! (_key_report.keys[k / 8] & bit);
     }
     return false;
 }
@@ -206,7 +206,7 @@ boolean Keyboard_::wasKeyPressed(uint8_t k) {
 
     if (k <= HID_LAST_KEY) {
         uint8_t bit = 1 << (uint8_t(k) % 8);
-        return !! (lastKeyReport.keys[k / 8] & bit);
+        return !! (_last_key_report.keys[k / 8] & bit);
     }
     return false;
 }
@@ -216,7 +216,7 @@ size_t Keyboard_::press(uint8_t k) {
   // If the key is in the range of 'printable' keys
   if (k <= HID_LAST_KEY) {
     uint8_t bit = 1 << (uint8_t(k) % 8);
-    keyReport.keys[k / 8] |= bit;
+    _key_report.keys[k / 8] |= bit;
     return 1;
   }
 
@@ -224,7 +224,7 @@ size_t Keyboard_::press(uint8_t k) {
   else if (k >= HID_KEYBOARD_FIRST_MODIFIER && k <= HID_KEYBOARD_LAST_MODIFIER) {
     // Convert key into bitfield (0 - 7)
     k = k - HID_KEYBOARD_FIRST_MODIFIER;
-    keyReport.modifiers |= (1 << k);
+    _key_report.modifiers |= (1 << k);
     return 1;
   }
 
@@ -236,7 +236,7 @@ size_t Keyboard_::release(uint8_t k) {
   // If we're releasing a printable key
   if (k <= HID_LAST_KEY) {
     uint8_t bit = 1 << (k % 8);
-    keyReport.keys[k / 8] &= ~bit;
+    _key_report.keys[k / 8] &= ~bit;
     return 1;
   }
 
@@ -244,7 +244,7 @@ size_t Keyboard_::release(uint8_t k) {
   else if (k >= HID_KEYBOARD_FIRST_MODIFIER && k <= HID_KEYBOARD_LAST_MODIFIER) {
     // Convert key into bitfield (0 - 7)
     k = k - HID_KEYBOARD_FIRST_MODIFIER;
-    keyReport.modifiers &= ~(1 << k);
+    _key_report.modifiers &= ~(1 << k);
     return 1;
   }
 
@@ -254,7 +254,7 @@ size_t Keyboard_::release(uint8_t k) {
 
 void Keyboard_::releaseAll(void) {
   // Release all keys
-  memset(&keyReport.allkeys, 0x00, sizeof(keyReport.allkeys));
+  memset(&_key_report.allkeys, 0x00, sizeof(_key_report.allkeys));
 }
 
 Keyboard_ Keyboard;
