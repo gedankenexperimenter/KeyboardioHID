@@ -1,9 +1,10 @@
 // -*- c++ -*-
 
-// This file only contains the API that other modules should use
-namespace kaleidoscope {
-namespace hid {
+#pragma once
 
+// This file only contains the API that other modules should use
+namespace kaleidoglyph {
+namespace hid {
 
 namespace keyboard {
 
