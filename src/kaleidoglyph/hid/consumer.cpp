@@ -1,5 +1,5 @@
 // -*- c++ -*-
-
+#if 0
 #include "consumer.h"
 
 #include "DescriptorPrimitives.h"
@@ -97,3 +97,4 @@ class Dispatcher {
 } // namespace consumer {
 } // namespace hid {
 } // namespace kaleidoscope {
+#endif

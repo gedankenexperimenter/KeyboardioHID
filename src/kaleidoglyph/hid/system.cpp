@@ -1,5 +1,5 @@
 // -*- c++ -*-
-
+#if 0
 #include "system.h"
 
 #include "DescriptorPrimitives.h"
@@ -82,3 +82,4 @@ void Dispatcher::sendReport(const Report& report) {
 } // namespace system {
 } // namespace hid {
 } // namespace kaleidoscope {
+#endif

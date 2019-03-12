@@ -1,5 +1,5 @@
 // -*- c++ -*-
-
+#if 0
 /*
 Copyright (c) 2014-2015 NicoHood
 Copyright (c) 2015-2018 Keyboard.io, Inc
@@ -143,3 +143,4 @@ void Dispatcher::sendReport(void) {
 } // namespace mouse {
 } // namespace hid {
 } // namespace kaleidoscope {
+#endif
