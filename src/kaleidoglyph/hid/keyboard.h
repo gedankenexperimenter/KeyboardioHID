@@ -1,5 +1,10 @@
 // -*- c++ -*-
 
+#pragma once
+
+#include <Arduino.h>
+#include <HID.h>
+
 // New idea: separate the key report (data) from the dispatcher (HID report
 // sender). This way, we can interact separately with the two, and even create
 // new reports without having to save and restore one that's getting ready to be
