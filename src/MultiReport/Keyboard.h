@@ -77,5 +77,6 @@ class Keyboard_ {
     HID_KeyboardReport_Data_t lastKeyReport;
   private:
     int sendReportUnchecked(void);
+    bool updateLastReportWithReleases();
 };
 extern Keyboard_ Keyboard;
