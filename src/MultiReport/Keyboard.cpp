@@ -252,6 +252,16 @@ size_t Keyboard_::release(uint8_t k) {
     return 0;
 }
 
+uint8_t Keyboard_::getModifiers() const {
+  return keyReport.modifiers;
+}
+void Keyboard_::setModifiers(uint8_t mods) {
+  keyReport.modifiers = mods;
+}
+void Keyboard_::clearModifiers() {
+  keyReport.modifiers = 0;
+}
+
 void Keyboard_::releaseAll(void) {
     // Release all keys
     memset(&keyReport.allkeys, 0x00, sizeof(keyReport.allkeys));

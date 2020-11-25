@@ -55,6 +55,11 @@ class Keyboard_ {
     size_t press(uint8_t k);
     size_t release(uint8_t k);
     void  releaseAll(void);
+
+    uint8_t getModifiers() const;
+    void setModifiers(uint8_t mods);
+    void clearModifiers();
+
     int sendReport(void);
 
     boolean isKeyPressed(uint8_t k);

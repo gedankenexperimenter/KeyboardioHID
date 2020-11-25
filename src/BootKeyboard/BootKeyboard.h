@@ -52,6 +52,10 @@ class BootKeyboard_ : public PluggableUSBModule {
     size_t release(uint8_t);
     void releaseAll(void);
 
+    uint8_t getModifiers() const;
+    void setModifiers(uint8_t mods);
+    void clearModifiers();
+
     int sendReport(void);
 
     boolean isModifierActive(uint8_t k);

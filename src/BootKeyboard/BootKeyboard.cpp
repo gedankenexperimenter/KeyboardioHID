@@ -308,6 +308,16 @@ void BootKeyboard_::releaseAll(void) {
     memset(&_keyReport.bytes, 0x00, sizeof(_keyReport.bytes));
 }
 
+uint8_t BootKeyboard_::getModifiers() const {
+  return _keyReport.modifiers;
+}
+void BootKeyboard_::setModifiers(uint8_t mods) {
+  _keyReport.modifiers = mods;
+}
+void BootKeyboard_::clearModifiers() {
+  _keyReport.modifiers = 0;
+}
+
 
 /* Returns true if the non-modifer key passed in will be sent during this key report
  * Returns false in all other cases
